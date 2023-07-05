@@ -1,10 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import which from 'which';
 
-import { PythonInstallation, PythonInstallationRecord, PythonVersion } from './types.js';
+import { PythonInstallation, PythonInstallationId, PythonInstallationRecord, PythonVersion } from './types.js';
 import { arrayFromAsync, runCommand } from './util.js';
-import { inspect } from 'node:util';
 
 
 const IS_WINDOWS = (process.platform === 'win32');
@@ -29,10 +27,10 @@ export async function* findPythonExecutablesInPath() {
 
           name = name.slice(0, -nameExt.length);
 
-          if (!/^py(?:thon(\d+)\.(\d+))?$/.test(name)) {
+          if (!/^py(thon(\d+(\.\d+)?)?)?$/.test(name)) {
             continue;
           }
-        } else if (!/^python(\d+)\.(\d+)$/.test(name)) {
+        } else if (!/^python(\d+(\.\d+)?)?$/.test(name)) {
           continue;
         }
 
@@ -46,18 +44,17 @@ export async function* findPythonExecutablesInPath() {
   }
 }
 
-
 export async function findPythonInstallations() {
   let possiblePythonLocations = await arrayFromAsync(findPythonExecutablesInPath());
   let condaList = await runCommand(['conda', 'env', 'list', '--json'], { ignoreErrors: true });
 
   if (condaList) {
-    possiblePythonLocations.push(...JSON.parse(condaList[0]).envs.map((env: string) => path.join(env, 'bin/python')));
+    possiblePythonLocations.push(...JSON.parse(condaList[0]).envs.map((env: string) =>
+      IS_WINDOWS
+        ? path.join(env, 'python.exe')
+        : path.join(env, 'bin', 'python')
+    ));
   }
-
-  possiblePythonLocations = (await Promise.all(
-    possiblePythonLocations.map(async (possibleLocation) => await which(possibleLocation).catch(() => null))
-  )).filter((possibleLocation): possibleLocation is string => possibleLocation !== null);
 
   let installations: PythonInstallationRecord = {};
 
@@ -73,7 +70,7 @@ export async function findPythonInstallations() {
     }
 
     let installation: PythonInstallation = {
-      id: possibleLocation,
+      id: (possibleLocation as PythonInstallationId),
       info,
       leaf: true,
       path: possibleLocation,
@@ -100,14 +97,15 @@ export async function findPythonInstallations() {
         lastInstallation.symlink = true;
 
         let installationPath = path.resolve(path.dirname(lastInstallation.path), linkPath);
+        let installationId = installationPath as PythonInstallationId;
 
-        if (installationPath in installations) {
-          installations[installationPath].leaf = false;
+        if (installationId in installations) {
+          installations[installationId].leaf = false;
           break;
         }
 
         let installation: PythonInstallation = {
-          id: installationPath,
+          id: installationId,
           info,
           leaf: false,
           path: installationPath,
@@ -170,7 +168,6 @@ export async function getPythonInstallationInfo(location: string): Promise<Pytho
   };
 }
 
-
 export function parsePythonVersion(input: string): PythonVersion | null {
   let match = /^Python (\d+)\.(\d+)\.(\d+)\r?\n$/.exec(input);
 
@@ -184,6 +181,3 @@ export function parsePythonVersion(input: string): PythonVersion | null {
 
   return null;
 }
-
-
-console.log(inspect(await findPythonInstallations(), { colors: true, depth: Infinity }));

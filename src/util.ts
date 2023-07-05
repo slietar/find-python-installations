@@ -24,7 +24,7 @@ export async function runCommand(args: string[] | string, options?: RunCommandOp
   return await new Promise<[string, string] | null>((resolve, reject) => {
     childProcess.execFile(execPath, otherArgs, {
       cwd: options?.cwd,
-      timeout: (options?.timeout ?? 1000)
+      timeout: (options?.timeout ?? 10000)
     }, (err, stdout, stderr) => {
       if (err) {
         if (options?.ignoreErrors) {
