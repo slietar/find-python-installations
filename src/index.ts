@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 
 import { PythonInstallation, PythonInstallationId, PythonInstallationRecord, PythonVersion } from './types.js';
@@ -9,11 +10,15 @@ const IS_WINDOWS = (process.platform === 'win32');
 
 
 export async function* findPythonExecutablesInPath() {
+  let envPath = IS_WINDOWS
+    ? (process.env['PATH'] ?? '')
+    : JSON.parse((await runCommand([process.argv[0], '-e', `"process.stdout.write(JSON.stringify(process.env.PATH ?? ''));"`], { shell: (os.userInfo().shell ?? true) }))[0]);
+
   let pathExt = IS_WINDOWS
     ? process.env['PATHEXT']?.split(path.delimiter) ?? ['.EXE', '.CMD', '.BAT', '.COM']
     : null;
 
-  for (let pathDirPath of (process.env['PATH']?.split(path.delimiter) ?? [])) {
+  for (let pathDirPath of (envPath.split(path.delimiter) ?? [])) {
     try {
       for (let rawName of await fs.readdir(pathDirPath)) {
         let name = rawName.toLowerCase();

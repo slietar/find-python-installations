@@ -5,6 +5,7 @@ export interface RunCommandOptions {
   architecture?: string | null;
   cwd?: string;
   ignoreErrors?: unknown;
+  shell?: boolean | string;
   timeout?: number;
 }
 
@@ -24,6 +25,7 @@ export async function runCommand(args: string[] | string, options?: RunCommandOp
   return await new Promise<[string, string] | null>((resolve, reject) => {
     childProcess.execFile(execPath, otherArgs, {
       cwd: options?.cwd,
+      shell: options?.shell,
       timeout: (options?.timeout ?? 10000)
     }, (err, stdout, stderr) => {
       if (err) {
