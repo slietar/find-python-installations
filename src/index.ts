@@ -181,3 +181,11 @@ export function parsePythonVersion(input: string): PythonVersion | null {
 
   return null;
 }
+
+
+export type {
+  PythonInstallation,
+  PythonInstallationId,
+  PythonInstallationRecord,
+  PythonVersion
+}
