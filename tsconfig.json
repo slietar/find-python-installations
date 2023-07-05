@@ -1,0 +1,12 @@
+{
+  "extends": "@slietar/tsconfig/tsconfig.json",
+  "compilerOptions": {
+    "module": "es2022",
+    "moduleResolution": "node",
+
+    "outDir": "lib"
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}
