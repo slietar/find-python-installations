@@ -12,7 +12,7 @@ const IS_WINDOWS = (process.platform === 'win32');
 export async function* findPythonExecutablesInPath() {
   let envPath = IS_WINDOWS
     ? process.env['PATH']!
-    : (await runCommand(['printenv', 'PATH'], { shell: (os.userInfo().shell ?? true) }))[0];
+    : (await runCommand([(os.userInfo().shell ?? '/bin/sh'), '-l', '-c', 'printenv PATH']))[0];
 
   let pathExt = IS_WINDOWS
     ? process.env['PATHEXT']?.split(path.delimiter) ?? ['.EXE', '.CMD', '.BAT', '.COM']
