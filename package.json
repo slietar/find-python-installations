@@ -1,6 +1,6 @@
 {
   "name": "find-python-installations",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Find all python installations on the system",
   "type": "module",
   "main": "lib/index.js",
