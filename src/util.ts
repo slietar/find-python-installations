@@ -42,6 +42,7 @@ export async function runCommand(args: string[] | string, options?: RunCommandOp
 }
 
 
+// TODO: Replace with Array.fromAsync
 export async function arrayFromAsync<T>(iterable: AsyncIterable<T>) {
   let items: T[] = [];
 

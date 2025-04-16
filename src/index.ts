@@ -85,7 +85,7 @@ export async function findPythonInstallations() {
     let lastInstallation = installation;
     installations[installation.id] = installation;
 
-    if (process.platform !== 'win32') {
+    if (!IS_WINDOWS) {
       while (true) {
         let linkPath: string;
 
